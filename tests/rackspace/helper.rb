@@ -46,13 +46,24 @@ module Shindo
 
     def wait_for_server_state(service, server_id, state, error_states=nil)
       current_state = nil
+      error_states = Array(error_states)
+      first_attempt = true
       until current_state == state
         current_state = service.get_server(server_id).body['server']['status']
-        if error_states
-          error_states = Array(error_states)           
-          raise "ERROR! Server should have transitioned to '#{state}' not '#{current_state}'" if error_states.include?(current_state)
-        end
+        unless error_states.empty?
+         if error_states.include?(current_state)
+           # We seem to be having an issue that a server reports a being in a certain state when it really isn't.
+           # My assumption is that this a caching issue and the system needs more time to settle.
+           if first_attempt
+            first_attempt = false
+            sleep 180
+            next
+           else
+            raise "ERROR! Server should have transitioned to '#{state}' not '#{current_state}'"
+           end
+         end
         sleep 10 unless Fog.mocking?
+        end
       end
       sleep 30 unless Fog.mocking?
     end
