@@ -76,10 +76,12 @@ module Fog
 
       request :create_image
       request :list_images
+      request :list_images_detail
       request :get_image
       request :delete_image
 
       request :list_flavors
+      request :list_flavors_detail
       request :get_flavor
 
       request :attach_volume
@@ -149,13 +151,13 @@ module Fog
         def request(params, parse_json = true, &block)
           super(params, parse_json, &block)
         rescue Excon::Errors::NotFound => error
-          raise NotFound.slurp(error, region)
+          raise NotFound.slurp(error, self)
         rescue Excon::Errors::BadRequest => error
-          raise BadRequest.slurp error
+          raise BadRequest.slurp(error, self)
         rescue Excon::Errors::InternalServerError => error
-          raise InternalServerError.slurp error
+          raise InternalServerError.slurp(error, self)
         rescue Excon::Errors::HTTPStatusError => error
-          raise ServiceError.slurp error
+          raise ServiceError.slurp(error, self)
         end
 
         def authenticate(options={})
@@ -169,6 +171,10 @@ module Fog
 
         def service_name
           :cloudServersOpenStack
+        end
+
+        def request_id_header
+          "X-Compute-Request-Id"
         end
 
         def region
