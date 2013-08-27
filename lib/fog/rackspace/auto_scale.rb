@@ -44,9 +44,12 @@ module Fog
         request :create_group
         request :delete_group
         request :get_group_state
+        request :pause_group
+        request :resume_group
 
         request :update_config
         request :get_config
+        request :get_launch_config
 
         class Mock < Fog::Rackspace::Service
           def initialize(options)
