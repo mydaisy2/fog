@@ -4,30 +4,18 @@ module Fog
 
       class Real
 
-        def update_config(group_id)
-
-          h = {
-             "name" => "workers",
-             "cooldown" => 60,
-             "minEntities" => 0,
-             "maxEntities" => 0,
-             "metadata" => {
-                  "firstkey" => "this is a string",
-                  "secondkey" => "1"
-              }
-          }
+        def update_config(group_id, options)
 
           request(
             :expects => [204],
             :method => 'PUT',
             :path => "groups/#{group_id}/config",
-            :body => Fog::JSON.encode(h)
-            )
+            :body => Fog::JSON.encode(options))
         end
       end
 
       class Mock
-        def update_config(group_id)
+        def update_config(group_id, options)
           Fog::Mock.not_implemented
         end
       end

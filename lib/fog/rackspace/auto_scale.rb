@@ -11,7 +11,7 @@ module Fog
       class BadRequest <  Fog::Rackspace::Errors::BadRequest
         attr_reader :validation_errors
 
-        def self.slurp(error)
+        def self.slurp(error, service=nil)
           if error && error.response
             status_code = error.response.status
             if error.response.body
@@ -25,6 +25,7 @@ module Fog
           new_error.set_backtrace(error.backtrace)
           new_error.instance_variable_set(:@validation_errors, details)
           new_error.instance_variable_set(:@status_code, status_code)
+          new_error.set_transaction_id(error, service)
 
           new_error
         end
@@ -73,13 +74,13 @@ module Fog
           def request(params, parse_json = true, &block)
             super(params, parse_json, &block)
           rescue Excon::Errors::NotFound => error
-            raise NotFound.slurp(error, region)
+            raise NotFound.slurp(error, self)
           rescue Excon::Errors::BadRequest => error
-            raise BadRequest.slurp error
+            raise BadRequest.slurp(error, self)
           rescue Excon::Errors::InternalServerError => error
-            raise InternalServerError.slurp error
+            raise InternalServerError.slurp(error, self)
           rescue Excon::Errors::HTTPStatusError => error
-            raise ServiceError.slurp error
+            raise ServiceError.slurp(error, self)
           end
 
           def endpoint_uri(service_endpoint_url=nil)
@@ -92,6 +93,10 @@ module Fog
 
           def service_name
             :autoscale
+          end
+
+          def request_id_header
+            "x-response-id"
           end
 
           def region
