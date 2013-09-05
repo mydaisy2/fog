@@ -25,11 +25,7 @@ Shindo.tests('Fog::Compute[:rackspace] | image requests', ['rackspace']) do
     end
 
     unless Fog.mocking?
-      begin
-       @image = @service.images.get(@image_id).wait_for(3000) { ready? }
-     rescue Fog::Errors::TimeoutError => e
-       puts "TIMEOUT waiting for IMAGE #{@image}>> #{@image.status}"
-     end
+      @image = @service.images.get(@image_id).wait_for(3000) { ready? }
     end
 
     tests("#get_image_details(#{@image_id})").formats(@image_format) do
